@@ -1,2 +1,4 @@
 * automatically look up more terms if available in a separate file
+* support for returning a list of results instead of just the first result
 * support for tabf and tabl sequences
+* add some tests?
