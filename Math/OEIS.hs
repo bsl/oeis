@@ -1,10 +1,21 @@
--- | Look up sequences in the Online Encyclopedia of Integer Sequences (OEIS).
+-- | A Haskell interface to the Online Encyclopedia of Integer
+-- Sequences (OEIS),  <http://www.research.att.com/~njas/sequences/>.
 
-module OEIS 
+module Math.OEIS 
   ( 
+    -- * Example usage
+    -- $sample
+    
+    -- * Lookup functions
+    getSequenceByID, lookupSequenceByID, 
+    extendSequence, lookupSequence,
+    getSequenceByID_IO, lookupSequenceByID_IO,
+    extendSequence_IO, lookupSequence_IO,
 
-    getSequenceByID, getSequenceByID_IO,
-    extendSequence,
+    -- * Data structures
+    SequenceData,
+    Language(..), Keyword(..),
+    OEISSequence(..)
 
   ) where
 
@@ -33,16 +44,16 @@ type SequenceData = [Integer]
 -- 
 -- Examples:
 -- 
--- > *OEIS> getSequenceByID "A000040"    -- the prime numbers
--- > Just [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,...]
+-- > Prelude Math.OEIS> getSequenceByID "A000040"    -- the prime numbers
+-- > Just [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47...
 -- >
--- > *OEIS> getSequenceByID "A-1"        -- no such sequence!
+-- > Prelude Math.OEIS> getSequenceByID "A-1"        -- no such sequence!
 -- > Nothing
 
 getSequenceByID :: String -> Maybe SequenceData
 getSequenceByID = unsafePerformIO . getSequenceByID_IO
 
--- | The same function as 'getSequenceByID', but with a result in the 'IO'
+-- | The same as 'getSequenceByID', but with a result in the 'IO'
 -- monad.
 getSequenceByID_IO :: String -> IO (Maybe SequenceData)
 getSequenceByID_IO x = lookupSequenceByID_IO x >>= return . fmap sequenceData
@@ -51,12 +62,20 @@ getSequenceByID_IO x = lookupSequenceByID_IO x >>= return . fmap sequenceData
 -- containing the entirety of the information the OEIS has on the
 -- sequence.
 --
--- Standard disclaimer about not being in the 'IO' monad applies.
+-- The standard disclaimer about not being in the 'IO' monad applies.
+--
+-- Examples:
+--
+-- > Prelude Math.OEIS> description `fmap` lookupSequenceByID "A000040"
+-- > Just "The prime numbers."
+-- >
+-- > Prelude Math.OEIS> keywords `fmap` lookupSequenceByID "A000105"
+-- > Just [Nonn,Hard,Nice,Core]
 
 lookupSequenceByID :: String -> Maybe OEISSequence
 lookupSequenceByID = unsafePerformIO . lookupSequenceByID_IO
 
--- | Same as 'lookupSequenceByID', but in the 'IO' monad.
+-- | The same as 'lookupSequenceByID', but in the 'IO' monad.
 lookupSequenceByID_IO :: String -> IO (Maybe OEISSequence)
 lookupSequenceByID_IO = getOEIS idSearchURI
 
@@ -64,29 +83,35 @@ lookupSequenceByID_IO = getOEIS idSearchURI
 -- the first sequence returned as a result, and using it to augment 
 -- the original sequence.
 --
--- Note that xs is guaranteed to be a prefix of (extendSequence xs).
+-- Note that @xs@ is guaranteed to be a prefix of @extendSequence xs@.
 -- If the matched OEIS sequence contains any elements prior to those
--- matching xs, they will be dropped.  In addition, if no matching
--- sequences are found, xs will be returned unchanged.
+-- matching @xs@, they will be dropped.  In addition, if no matching
+-- sequences are found, @xs@ will be returned unchanged.
 --
--- The result is not in the IO monad even though the implementation
+-- The result is not in the 'IO' monad even though the implementation
 -- requires looking up information via the Internet.  There are no
 -- side effects, and practically speaking this function is
 -- referentially transparent (technically, results may change from
 -- time to time when the OEIS database is updated; this is slightly
--- more likely than the results of getSequenceByID changing, but still
+-- more likely than the results of 'getSequenceByID' changing, but still
 -- unlikely enough to be essentially a non-issue.  Again, purists may
--- use extendSequence_IO).
+-- use 'extendSequence_IO').
 --
 -- Examples:
 --
--- TODO: put some examples here.
+-- > Prelude Math.OEIS> extendSequence [5,7,11,13,17]
+-- > [5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71...
+--
+-- > Prelude Math.OEIS> extendSequence [2,4,8,16,32]
+-- > [2,4,8,16,32,64,128,256,512,1024,2048,4096,8192...
+--
+-- > Prelude Math.OEIS> extendSequence [9,8,7,41,562]   -- nothing matches
+-- > [9,8,7,41,562]
 
-extendSequence :: [Integer] -> [Integer]
+extendSequence :: SequenceData -> SequenceData
 extendSequence = unsafePerformIO . extendSequence_IO
 
--- | The same function as extendSequence, but with a result in the IO
--- monad.
+-- | The same as 'extendSequence', but in the 'IO' monad.
 extendSequence_IO :: [Integer] -> IO [Integer]
 extendSequence_IO [] = return []
 extendSequence_IO xs = do oeis <- lookupSequence_IO xs
@@ -94,19 +119,24 @@ extendSequence_IO xs = do oeis <- lookupSequence_IO xs
                             Nothing -> return xs
                             Just s  -> return $ extend xs (sequenceData s)
 
-lookupSequence :: [Integer] -> OEISSequence
+-- | Find a matching sequence in the OEIS database, returning a data
+-- structure containing the entirety of the information the OEIS has
+-- on the sequence.
+--
+-- The standard disclaimer about not being in the 'IO' monad applies.
+lookupSequence :: SequenceData -> Maybe OEISSequence
 lookupSequence = unsafePerformIO . lookupSequence_IO
 
-lookupSequence_IO :: [Integer] -> IO OEISSequence
+-- | The same as 'lookupSequence', but in the 'IO' monad.
+lookupSequence_IO :: SequenceData -> IO (Maybe OEISSequence)
 lookupSequence_IO = getOEIS seqSearchURI
 
--- | 'extend xs ext' returns the maximal suffix of ext of which xs is
--- a prefix, or xs if xs is not a prefix of any suffixes of ext. It
+-- | @extend xs ext@ returns the maximal suffix of @ext@ of which @xs@ is
+-- a prefix, or @xs@ if @xs@ is not a prefix of any suffixes of @ext@. It
 -- is guaranteed that
 --
--- forall xs ext. xs `isPrefixOf` (extend xs ext)
-
-extend :: [Integer] -> [Integer] -> [Integer]
+-- > forall xs ext. xs `isPrefixOf` (extend xs ext)
+extend :: SequenceData -> SequenceData -> SequenceData
 extend xs ext = fromMaybe xs . listToMaybe . filter (xs `isPrefixOf`) $ tails ext
 
 baseSearchURI = "http://www.research.att.com/~njas/sequences/?n=1&fmt=3&q="
@@ -114,7 +144,7 @@ baseSearchURI = "http://www.research.att.com/~njas/sequences/?n=1&fmt=3&q="
 idSearchURI :: String -> String
 idSearchURI n = baseSearchURI ++ "id:" ++ n
 
-seqSearchURI :: [Integer] -> String
+seqSearchURI :: SequenceData -> String
 seqSearchURI xs = baseSearchURI ++ (concat . intersperse "," . map show $ xs)
 
 data LookupError = LookupError deriving Show
@@ -144,11 +174,16 @@ request uri = Request{ rqURI = uri,
 
 -----------------------------------------------------------
 
--- hmm... redo the parsing with Parsec?  seems like overkill.
-
-type CatalogNumber = String
-type Reference     = String
+-- | Programming language that some code to generate the sequence is
+-- written in.  The only languages indicated natively by the OEIS
+-- database are Mathematica and Maple; any other languages will be
+-- listed (usually in parentheses) at the beginning of the actual code
+-- snippet.
 data Language = Mathematica | Maple | Other deriving Show
+
+-- | OEIS keywords.  For more information on the meaning of each
+-- keyword, see
+-- <http://www.research.att.com/~njas/sequences/eishelp2.html#RK>.
 data Keyword = Base | Bref | Cofr | Cons | Core | Dead | Dumb | Dupe |
                Easy | Eigen | Fini | Frac | Full | Hard | More | Mult |
                New | Nice | Nonn | Obsc | Sign | Tabf | Tabl | Uned |
@@ -162,23 +197,44 @@ capitalize :: String -> String
 capitalize ""     = ""
 capitalize (c:cs) = toUpper c : map toLower cs
 
-data OEISSequence = OEIS { catalogNums  :: [CatalogNumber], -- %I
-                           sequenceData :: SequenceData,    -- %S,T,U
-                           signedData   :: SequenceData,    -- %V,W,X
-                           description  :: String,          -- %N
-                           references   :: [String],        -- %D
-                           links        :: [String],        -- %H
-                           formulas     :: [String],        -- %F
-                           xrefs        :: [String],        -- %Y
-                           author       :: String,          -- %A
-                           offset       :: Int,             -- %O
-                           firstGT1     :: Int,             -- %O
-                           programs     :: [(Language,String)],  -- %p,t,o
-                           notes        :: [String],        -- %E
-                           examples     :: [String],        -- %e
-                           keywords     :: [Keyword],       -- %K
-                           comments     :: [String]         -- %C
-                         }  deriving Show
+-- | Data structure for storing an OEIS entry.  For more information
+-- on the various components, see
+-- <http://www.research.att.com/~njas/sequences/eishelp2.html>.
+
+data OEISSequence = 
+  OEIS { catalogNums  :: [String], 
+         -- ^ Catalog number(s), e.g. A000040, N1425. (%I)
+         sequenceData :: SequenceData, 
+         -- ^ The actual sequence data (or absolute values of the sequence data in the case of signed sequences).  (%S,T,U)
+         signedData   :: SequenceData,    
+         -- ^ Signed sequence data (empty for sequences with all positive entries).  (%V,W,X)
+         description  :: String,
+         -- ^ Short description of the sequence. (%N)
+         references   :: [String],        
+         -- ^ List of academic references. (%D)
+         links        :: [String],        
+         -- ^ List of links to more information on the web. (%H)
+         formulas     :: [String],        
+         -- ^ Formulas or equations involving the sequence. (%F)
+         xrefs        :: [String],        
+         -- ^ Cross-references to other sequences. (%Y)
+         author       :: String,          
+         -- ^ Author who input the sequence into the database. (%A)
+         offset       :: Int,             
+         -- ^ Subscript\/index of the first term. (%O)
+         firstGT1     :: Int,             
+         -- ^ Index of the first term \> 1.  (%O)
+         programs     :: [(Language,String)],  
+         -- ^ Code that can be used to generate the sequence. (%p,t,o)
+         extensions   :: [String],        
+         -- ^ Corrections, extensions, or edits. (%E)
+         examples     :: [String],        
+         -- ^ Examples. (%e)
+         keywords     :: [Keyword],       
+         -- ^ Keywords. (%K)
+         comments     :: [String]         
+         -- ^ Comments. (%C)
+       }  deriving Show
 
 emptyOEIS :: OEISSequence
 emptyOEIS = OEIS [] [] [] "" [] [] [] [] "" 0 0 [] [] [] [] []
@@ -204,7 +260,7 @@ addElement ('t', x) c = c { programs    = (Maple, x) :
                                             (programs c)     }
 addElement ('o', x) c = c { programs    = (Other, x) : 
                                             (programs c)     }
-addElement ('E', x) c = c { notes       = x : (notes c)      }
+addElement ('E', x) c = c { extensions  = x : (extensions c) }
 addElement ('e', x) c = c { examples    = x : (examples c)   }
 addElement ('K', x) c = c { keywords    = parseKeywords x    }
 addElement ('C', x) c = c { comments    = x : (comments c)   }
@@ -265,3 +321,79 @@ splitWhile _ []     = ([],[])
 splitWhile p xxs@(x:xs) | p x       = first (x:) (splitWhile p xs)
                         | otherwise = ([], xxs)
 
+{- $sample
+
+Suppose we are interested in answering the question, \"how many
+distinct binary trees are there with exactly 20 nodes?\" Some naive
+code to answer this question might be as follows:
+
+> import Math.OEIS
+> import Data.List (genericLength)
+>
+> -- data-less binary trees.
+> data BTree = Empty | Fork BTree BTree  deriving Show
+>
+> A list of all the binary trees with exactly n nodes.
+> listTrees :: Int -> [BTree]
+> listTrees 0 = [Empty]
+> listTrees n = [Fork left right | 
+>                k <- [0..n-1],
+>                left <- listTrees k,
+>                right <- listTrees (n-1-k) ]
+> 
+> countTrees :: Int -> Integer
+> countTrees = genericLength . listTrees
+
+The problem, of course, is that @countTrees@ is horribly inefficient:
+
+@
+*Main> :set +s
+*Main> countTrees 5
+42
+(0.00 secs, 0 bytes)
+*Main> countTrees 10
+16796
+(0.47 secs, 27513240 bytes)
+*Main> countTrees 12
+208012
+(7.32 secs, 357487720 bytes)
+*Main> countTrees 13
+*** Exception: stack overflow
+@
+
+There's really no way we can evaluate @countTrees 20@.  The solution? Cheat!
+
+> -- countTrees works ok up to 10 nodes.
+> smallTreeCounts = map countTrees [0..10]
+> 
+> -- Extend the sequence via the OEIS!
+> treeCounts = extendSequence smallTreeCounts
+
+Now we can answer the question:
+
+> *Main> treeCounts !! 20
+> 6564120420
+
+Sweet.  Of course, to have any sort of confidence in our answer, more
+research is required!  Let's see what combinatorial goodness we have
+stumbled across.
+
+@
+*Main> description \`fmap\` lookupSequence smallTreeCounts
+Just \"Catalan numbers: C(n) = binomial(2n,n)\/(n+1) = (2n)!\/(n!(n+1)!). Also called Segner numbers.\"
+@
+
+Catalan numbers, interesting.  And a nice formula we could use to code
+up a /real/ solution!  Hmm, where can we read more about these
+so-called \'Catalan numbers\'?
+
+@
+*Main> (head . references) \`fmap\` lookupSequence smallTreeCounts
+Just [\"A. Bernini, F. Disanto, R. Pinzani and S. Rinaldi, Permutations defining convex permutominoes, preprint, 2007.\"]
+*Main> (head . links) \`fmap\` lookupSequence smallTreeCounts
+Just [\"N. J. A. Sloane, \<a href=\\\"http:\/\/www.research.att.com\/~njas\/sequences\/b000108.txt\\\"\>The first 200 Catalan numbers\<\/a\>\"]
+@
+
+And so on.  Reams of collected mathematical knowledge at your
+fingertips!  You must promise only to use this power for Good.  
+-}
