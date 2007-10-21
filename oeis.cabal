@@ -7,7 +7,7 @@ License-file:        LICENSE
 Extra-source-files:  README
 Author:              Brent Yorgey
 Maintainer:          byorgey@gmail.com
-Category:            Mathematics
+Category:            Math
 Build-Depends:       base,network,HTTP
 Exposed-Modules:     Math.OEIS
 ghc-options:         -O2
