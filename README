@@ -1,0 +1,32 @@
+
+Math.OEIS is a library module for interfacing with the Online
+Encyclopedia of Integer Sequences
+(http://www.research.att.com/~njas/sequences/).
+
+------------------------------------------------------------------------
+
+Building:
+
+Get the dependencies
+
+    Math.OEIS depends on the network and HTTP libraries.  On some platforms,
+    these come bundled with GHC. On others, such as Debian/Ubuntu, you can get 
+    them from your package manager:
+
+        apt-get install libghc6-network-dev
+
+Build with Cabal:
+
+    runhaskell Setup.lhs configure --prefix=$HOME
+    runhaskell Setup.lhs build
+    runhaskell Setup.lhs install --user
+
+Building Haddock documentation (optional):
+
+    runhaskell Setup.lhs haddock
+
+    Once the documentation has been built, you can access it by 
+    pointing your browser to dist/doc/html/index.html.  It contains
+    descriptions of the exported functions, in addition to many
+    examples of the library's use.
+
