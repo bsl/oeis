@@ -1,5 +1,7 @@
 -- | A Haskell interface to the Online Encyclopedia of Integer
 -- Sequences (OEIS),  <http://www.research.att.com/~njas/sequences/>.
+-- Comments, suggestions, or bug reports should be sent to 
+-- Brent Yorgey, byorgey /at/ gmail /dot/ com.
 
 module Math.OEIS 
   ( 
@@ -327,13 +329,12 @@ Suppose we are interested in answering the question, \"how many
 distinct binary trees are there with exactly 20 nodes?\" Some naive
 code to answer this question might be as follows:
 
-> import Math.OEIS
 > import Data.List (genericLength)
 >
 > -- data-less binary trees.
 > data BTree = Empty | Fork BTree BTree  deriving Show
 >
-> A list of all the binary trees with exactly n nodes.
+> -- A list of all the binary trees with exactly n nodes.
 > listTrees :: Int -> [BTree]
 > listTrees 0 = [Empty]
 > listTrees n = [Fork left right | 
@@ -363,10 +364,12 @@ The problem, of course, is that @countTrees@ is horribly inefficient:
 
 There's really no way we can evaluate @countTrees 20@.  The solution? Cheat!
 
+> import Math.OEIS
+>
 > -- countTrees works ok up to 10 nodes.
 > smallTreeCounts = map countTrees [0..10]
 > 
-> -- Extend the sequence via the OEIS!
+> -- now, extend the sequence via the OEIS!
 > treeCounts = extendSequence smallTreeCounts
 
 Now we can answer the question:
