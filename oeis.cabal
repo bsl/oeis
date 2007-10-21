@@ -1,7 +1,6 @@
 Name:                oeis
 Version:             0.1
 Stability:           experimental
-Homepage:            http://wso.williams.edu/~byorgey/oeis/
 Description:         Haskell interface to the Online Encyclopedia of Integer Sequences.
 License:             BSD3
 License-file:        LICENSE
