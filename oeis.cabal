@@ -4,6 +4,7 @@ Stability:           experimental
 Description:         Haskell interface to the Online Encyclopedia of Integer Sequences.
 License:             BSD3
 License-file:        LICENSE
+Extra-source-files:  README
 Author:              Brent Yorgey
 Maintainer:          byorgey@gmail.com
 Category:            Mathematics
