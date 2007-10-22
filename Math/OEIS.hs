@@ -25,7 +25,7 @@ import Network.HTTP
 import Network.URI
 import System.IO.Unsafe (unsafePerformIO)
 import Data.List (intersperse, isPrefixOf, tails, foldl')
-import Data.Char (toUpper, toLower)
+import Data.Char (toUpper, toLower, isSpace)
 import Data.Maybe (listToMaybe, fromMaybe)
 import Control.Arrow
 
@@ -255,7 +255,7 @@ addElement ('Y', x) c = c { xrefs       = x : (xrefs c)      }
 addElement ('A', x) c = c { author      = x                  }
 addElement ('O', x) c = c { offset      = read o             
                           , firstGT1    = read f }
-  where (o,f) = second tail . splitWhile (/=',') $ x
+  where (o,f) = second tail . span (/=',') $ x
 addElement ('p', x) c = c { programs    = (Mathematica, x) :
                                             (programs c)     }
 addElement ('t', x) c = c { programs    = (Maple, x) :
@@ -283,7 +283,7 @@ parseKeywords = map readKeyword . csvItems
 csvItems :: String -> [String]
 csvItems "" = []
 csvItems x = item : others
-    where (item, rest) = splitWhile (/=',') x
+    where (item, rest) = span (/=',') x
           others = csvItems $ del ',' rest
 
 del :: Char -> String -> String
@@ -301,13 +301,10 @@ combineConts :: [String] -> [String]
 combineConts [] = []
 combineConts [x] = [x]
 combineConts (s@('%':c:_) : ss) = 
-  uncurry (:) . (joinConts s *** combineConts) . splitConts $ ss
+  uncurry (:) . (joinConts s *** combineConts) . break isItem $ ss
 
 splitWord :: String -> (String, String)
-splitWord = second trimLeft . splitWhile (/= ' ')
-
-splitConts :: [String] -> ([String], [String])
-splitConts = splitWhile (not . isItem)
+splitWord = second trimLeft . break isSpace
 
 isItem :: String -> Bool
 isItem x = not (null x) && '%' == head x
@@ -316,12 +313,7 @@ joinConts :: String -> [String] -> String
 joinConts s conts = s ++ (concat . map trimLeft $ conts)
 
 trimLeft :: String -> String
-trimLeft = dropWhile (== ' ')
-
-splitWhile :: (a -> Bool) -> [a] -> ([a], [a])
-splitWhile _ []     = ([],[])
-splitWhile p xxs@(x:xs) | p x       = first (x:) (splitWhile p xs)
-                        | otherwise = ([], xxs)
+trimLeft = dropWhile isSpace
 
 {- $sample
 
