@@ -12,7 +12,7 @@ Synopsis:            Interface to the Online Encyclopedia of Integer Sequences
 Description:         Haskell interface to the Online Encyclopedia of Integer Sequences.
 Homepage:            http://code.haskell.org/oeis
 
-Extra-source-files:  README
+data-files:          README, example/Catalan.hs
 
 Build-Depends:       base, network, HTTP
 Build-Type:          Simple
