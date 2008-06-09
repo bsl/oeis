@@ -13,6 +13,7 @@ module Math.OEIS
     extendSequence, lookupSequence,
     getSequenceByID_IO, lookupSequenceByID_IO,
     extendSequence_IO, lookupSequence_IO,
+    searchSequence_IO, lookupOEIS,
 
     -- * Data structures
     SequenceData,
@@ -21,15 +22,32 @@ module Math.OEIS
 
   ) where
 
-import Network.HTTP -- (simpleHTTP, rspBody, rspCode, rqBody, rqHeaders, rqMethod, rqURI, Request(..), GET)
-import Network.URI (parseURI, URI)
-import System.IO.Unsafe (unsafePerformIO)
-import Data.List (intersperse, isPrefixOf, tails, foldl')
-import Data.Char (toUpper, toLower, isSpace)
-import Data.Maybe (listToMaybe, fromMaybe)
 import Control.Arrow (second, (***))
+import Data.Char (isDigit, isSpace, toUpper, toLower)
+import Data.List (intersperse, isPrefixOf, tails, foldl')
+import Data.Maybe (listToMaybe, fromMaybe)
+import Network.HTTP -- (simpleHTTP, rspBody, rspCode, rqBody, rqHeaders, rqMethod, rqURI, Request(..), GET)
+import Network.URI (escapeURIString, isAllowedInURI, parseURI, URI)
+import System.IO.Unsafe (unsafePerformIO)
 
 type SequenceData = [Integer]
+
+-- | Interpret a string as a OEIS request, and return the results as Strings
+lookupOEIS :: String -> IO [String]
+lookupOEIS a = do
+         let a'  = commas . reverse . dropWhile isSpace . reverse . dropWhile isSpace $ a
+         x <- searchSequence_IO a'
+         case x of
+            Nothing -> return ["Sequence not found. "]
+            Just s  -> return [description s, show $ sequenceData s]
+ where commas []                     = []
+       commas (x:' ':xs) | isDigit x = x : ',' : commas xs
+       commas (x:xs)                 = x : commas xs
+
+
+-- | Look up a sequence in the OEIS using its search function
+searchSequence_IO :: String -> IO (Maybe OEISSequence)
+searchSequence_IO x = getOEIS (baseSearchURI ++) (escapeURIString isAllowedInURI $ x)
 
 -- | Look up a sequence in the OEIS by its catalog number.  Generally
 -- this would be its A-number, but M-numbers (from the /Encyclopedia of
