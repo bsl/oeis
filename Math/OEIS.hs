@@ -1,15 +1,15 @@
 -- | A Haskell interface to the Online Encyclopedia of Integer
 -- Sequences (OEIS),  <http://www.research.att.com/~njas/sequences/>.
--- Comments, suggestions, or bug reports should be sent to 
+-- Comments, suggestions, or bug reports should be sent to
 -- Brent Yorgey, byorgey /at/ gmail /dot/ com.
 
-module Math.OEIS 
-  ( 
+module Math.OEIS
+  (
     -- * Example usage
     -- $sample
-    
+
     -- * Lookup functions
-    getSequenceByID, lookupSequenceByID, 
+    getSequenceByID, lookupSequenceByID,
     extendSequence, lookupSequence,
     getSequenceByID_IO, lookupSequenceByID_IO,
     extendSequence_IO, lookupSequence_IO,
@@ -21,13 +21,13 @@ module Math.OEIS
 
   ) where
 
-import Network.HTTP
-import Network.URI
+import Network.HTTP -- (simpleHTTP, rspBody, rspCode, rqBody, rqHeaders, rqMethod, rqURI, Request(..), GET)
+import Network.URI (parseURI, URI)
 import System.IO.Unsafe (unsafePerformIO)
 import Data.List (intersperse, isPrefixOf, tails, foldl')
 import Data.Char (toUpper, toLower, isSpace)
 import Data.Maybe (listToMaybe, fromMaybe)
-import Control.Arrow
+import Control.Arrow (second, (***))
 
 type SequenceData = [Integer]
 
@@ -43,9 +43,9 @@ type SequenceData = [Integer]
 -- (OEIS A-numbers could change in theory, but it's extremely
 -- unlikely).  If you're a nitpicky purist, feel free to use the
 -- provided 'getSequenceByID_IO' instead.
--- 
+--
 -- Examples:
--- 
+--
 -- > Prelude Math.OEIS> getSequenceByID "A000040"    -- the prime numbers
 -- > Just [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47...
 -- >
@@ -81,8 +81,8 @@ lookupSequenceByID = unsafePerformIO . lookupSequenceByID_IO
 lookupSequenceByID_IO :: String -> IO (Maybe OEISSequence)
 lookupSequenceByID_IO = getOEIS idSearchURI
 
--- | Extend a sequence by using it as a lookup to the OEIS, taking 
--- the first sequence returned as a result, and using it to augment 
+-- | Extend a sequence by using it as a lookup to the OEIS, taking
+-- the first sequence returned as a result, and using it to augment
 -- the original sequence.
 --
 -- Note that @xs@ is guaranteed to be a prefix of @extendSequence xs@.
@@ -117,7 +117,7 @@ extendSequence = unsafePerformIO . extendSequence_IO
 extendSequence_IO :: [Integer] -> IO [Integer]
 extendSequence_IO [] = return []
 extendSequence_IO xs = do oeis <- lookupSequence_IO xs
-                          case oeis of 
+                          case oeis of
                             Nothing -> return xs
                             Just s  -> return $ extend xs (sequenceData s)
 
@@ -141,6 +141,7 @@ lookupSequence_IO = getOEIS seqSearchURI
 extend :: SequenceData -> SequenceData -> SequenceData
 extend xs ext = fromMaybe xs . listToMaybe . filter (xs `isPrefixOf`) $ tails ext
 
+baseSearchURI :: String
 baseSearchURI = "http://www.research.att.com/~njas/sequences/?n=1&fmt=3&q="
 
 idSearchURI :: String -> String
@@ -163,7 +164,7 @@ get :: URI -> IO (Either LookupError String)
 get uri = do
     eresp <- simpleHTTP (request uri)
     case eresp of
-      (Left e) -> return (Left LookupError)
+      (Left _) -> return (Left LookupError)
       (Right resp) -> case rspCode resp of
                        (2,0,0) -> return (Right $ rspBody resp)
                        _ -> return (Left LookupError)
@@ -189,7 +190,7 @@ data Language = Mathematica | Maple | Other deriving Show
 data Keyword = Base | Bref | Cofr | Cons | Core | Dead | Dumb | Dupe |
                Easy | Eigen | Fini | Frac | Full | Hard | More | Mult |
                New | Nice | Nonn | Obsc | Sign | Tabf | Tabl | Uned |
-               Unkn | Walk | Word 
+               Unkn | Walk | Word
        deriving (Eq,Show,Read)
 
 readKeyword :: String -> Keyword
@@ -203,38 +204,38 @@ capitalize (c:cs) = toUpper c : map toLower cs
 -- on the various components, see
 -- <http://www.research.att.com/~njas/sequences/eishelp2.html>.
 
-data OEISSequence = 
-  OEIS { catalogNums  :: [String], 
+data OEISSequence =
+  OEIS { catalogNums  :: [String],
          -- ^ Catalog number(s), e.g. A000040, N1425. (%I)
-         sequenceData :: SequenceData, 
+         sequenceData :: SequenceData,
          -- ^ The actual sequence data (or absolute values of the sequence data in the case of signed sequences).  (%S,T,U)
-         signedData   :: SequenceData,    
+         signedData   :: SequenceData,
          -- ^ Signed sequence data (empty for sequences with all positive entries).  (%V,W,X)
          description  :: String,
          -- ^ Short description of the sequence. (%N)
-         references   :: [String],        
+         references   :: [String],
          -- ^ List of academic references. (%D)
-         links        :: [String],        
+         links        :: [String],
          -- ^ List of links to more information on the web. (%H)
-         formulas     :: [String],        
+         formulas     :: [String],
          -- ^ Formulas or equations involving the sequence. (%F)
-         xrefs        :: [String],        
+         xrefs        :: [String],
          -- ^ Cross-references to other sequences. (%Y)
-         author       :: String,          
+         author       :: String,
          -- ^ Author who input the sequence into the database. (%A)
-         offset       :: Int,             
+         offset       :: Int,
          -- ^ Subscript\/index of the first term. (%O)
-         firstGT1     :: Int,             
+         firstGT1     :: Int,
          -- ^ Index of the first term \> 1.  (%O)
-         programs     :: [(Language,String)],  
+         programs     :: [(Language,String)],
          -- ^ Code that can be used to generate the sequence. (%p,t,o)
-         extensions   :: [String],        
+         extensions   :: [String],
          -- ^ Corrections, extensions, or edits. (%E)
-         examples     :: [String],        
+         examples     :: [String],
          -- ^ Examples. (%e)
-         keywords     :: [Keyword],       
+         keywords     :: [Keyword],
          -- ^ Keywords. (%K)
-         comments     :: [String]         
+         comments     :: [String]
          -- ^ Comments. (%C)
        }  deriving Show
 
@@ -244,23 +245,23 @@ emptyOEIS = OEIS [] [] [] "" [] [] [] [] "" 0 0 [] [] [] [] []
 addElement :: (Char, String) -> (OEISSequence -> OEISSequence)
 addElement ('I', x) c = c { catalogNums = words x }
 addElement (t, x)   c | t `elem` "STU" = c { sequenceData = nums ++ (sequenceData c) }
-    where nums = map read $ csvItems x 
+    where nums = map read $ csvItems x
 addElement (t, x)   c | t `elem` "VWX" = c { signedData = nums ++ (signedData c) }
     where nums = map read $ csvItems x
 addElement ('N', x) c = c { description = x                  }
-addElement ('D', x) c = c { references  = x : (references c) } 
+addElement ('D', x) c = c { references  = x : (references c) }
 addElement ('H', x) c = c { links       = x : (links c)      }
 addElement ('F', x) c = c { formulas    = x : (formulas c)   }
 addElement ('Y', x) c = c { xrefs       = x : (xrefs c)      }
 addElement ('A', x) c = c { author      = x                  }
-addElement ('O', x) c = c { offset      = read o             
+addElement ('O', x) c = c { offset      = read o
                           , firstGT1    = read f }
   where (o,f) = second tail . span (/=',') $ x
 addElement ('p', x) c = c { programs    = (Mathematica, x) :
                                             (programs c)     }
 addElement ('t', x) c = c { programs    = (Maple, x) :
                                             (programs c)     }
-addElement ('o', x) c = c { programs    = (Other, x) : 
+addElement ('o', x) c = c { programs    = (Other, x) :
                                             (programs c)     }
 addElement ('E', x) c = c { extensions  = x : (extensions c) }
 addElement ('e', x) c = c { examples    = x : (examples c)   }
@@ -268,7 +269,7 @@ addElement ('K', x) c = c { keywords    = parseKeywords x    }
 addElement ('C', x) c = c { comments    = x : (comments c)   }
 
 parseOEIS :: String -> Maybe OEISSequence
-parseOEIS x = if "no match" `isPrefixOf` (ls!!1) 
+parseOEIS x = if "no match" `isPrefixOf` (ls!!1)
                 then Nothing
                 else Just . foldl' (flip addElement) emptyOEIS . reverse . parseRawOEIS $ ls'
     where ls = lines x
@@ -292,15 +293,15 @@ del c (x:xs) | c==x      = xs
              | otherwise = (x:xs)
 
 parseItem :: String -> (Char, String)
-parseItem s = (c, str) 
+parseItem s = (c, str)
     where ( '%':c:_ , rest) = splitWord s
-          ( idNum, str )    = if (c == 'I') then ("", rest)
+          (_, str )    = if (c == 'I') then ("", rest)
                                             else splitWord rest
-                           
+
 combineConts :: [String] -> [String]
 combineConts [] = []
 combineConts [x] = [x]
-combineConts (s@('%':c:_) : ss) = 
+combineConts (s@('%':_:_) : ss) =
   uncurry (:) . (joinConts s *** combineConts) . break isItem $ ss
 
 splitWord :: String -> (String, String)
@@ -329,11 +330,11 @@ code to answer this question might be as follows:
 > -- A list of all the binary trees with exactly n nodes.
 > listTrees :: Int -> [BTree]
 > listTrees 0 = [Empty]
-> listTrees n = [Fork left right | 
+> listTrees n = [Fork left right |
 >                k <- [0..n-1],
 >                left <- listTrees k,
 >                right <- listTrees (n-1-k) ]
-> 
+>
 > countTrees :: Int -> Integer
 > countTrees = genericLength . listTrees
 
@@ -360,7 +361,7 @@ There's really no way we can evaluate @countTrees 20@.  The solution? Cheat!
 >
 > -- countTrees works ok up to 10 nodes.
 > smallTreeCounts = map countTrees [0..10]
-> 
+>
 > -- now, extend the sequence via the OEIS!
 > treeCounts = extendSequence smallTreeCounts
 
@@ -390,5 +391,5 @@ Just [\"N. J. A. Sloane, \<a href=\\\"http:\/\/www.research.att.com\/~njas\/sequ
 @
 
 And so on.  Reams of collected mathematical knowledge at your
-fingertips!  You must promise only to use this power for Good.  
+fingertips!  You must promise only to use this power for Good.
 -}
