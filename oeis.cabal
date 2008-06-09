@@ -1,15 +1,20 @@
 Name:                oeis
 Version:             0.1
 Stability:           experimental
-Description:         Haskell interface to the Online Encyclopedia of Integer Sequences.
+Category:            Math
 Synopsis:            Interface to the Online Encyclopedia of Integer Sequences
+Description:         Haskell interface to the Online Encyclopedia of Integer Sequences.
 Homepage:            http://code.haskell.org/oeis
 License:             BSD3
 License-file:        LICENSE
-Extra-source-files:  README
+
 Author:              Brent Yorgey
 Maintainer:          Brent Yorgey <byorgey@gmail.com>
-Category:            Math
+
+Extra-source-files:  README
+
 Build-Depends:       base,network,HTTP
+Build-Type:          Simple
+
 Exposed-Modules:     Math.OEIS
 ghc-options:         -Wall
