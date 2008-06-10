@@ -285,6 +285,7 @@ addElement ('E', x) c = c { extensions  = x : (extensions c) }
 addElement ('e', x) c = c { examples    = x : (examples c)   }
 addElement ('K', x) c = c { keywords    = parseKeywords x    }
 addElement ('C', x) c = c { comments    = x : (comments c)   }
+addElement _ c = c
 
 parseOEIS :: String -> Maybe OEISSequence
 parseOEIS x = if "no match" `isPrefixOf` (ls!!1)
@@ -317,10 +318,9 @@ parseItem s = (c, str)
                                             else splitWord rest
 
 combineConts :: [String] -> [String]
-combineConts [] = []
-combineConts [x] = [x]
 combineConts (s@('%':_:_) : ss) =
   uncurry (:) . (joinConts s *** combineConts) . break isItem $ ss
+combineConts ss = ss
 
 splitWord :: String -> (String, String)
 splitWord = second trimLeft . break isSpace
