@@ -187,7 +187,7 @@ get uri = do
                        (2,0,0) -> return (Right $ rspBody resp)
                        _ -> return (Left LookupError)
 
-request :: URI -> Request
+request :: URI -> Request String
 request uri = Request{ rqURI = uri,
                        rqMethod = GET,
                        rqHeaders = [],
