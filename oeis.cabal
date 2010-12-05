@@ -1,20 +1,37 @@
-Name:                oeis
-Version:             0.2.2.1
-Stability:           experimental
+name:         oeis
+version:      0.2.2.1
+stability:    experimental
+category:     Math
+synopsis:     Interface to the Online Encyclopedia of Integer Sequences
+description:  Interface to the Online Encyclopedia of Integer Sequences. See <http://oeis.org/>.
+author:       Brent Yorgey
+maintainer:   Brian Lewis <brian@lorf.org>
+license:      BSD3
+license-file: LICENSE
 
-Author:              Brent Yorgey
-Maintainer:          Brent Yorgey <byorgey@gmail.com>
-License:             BSD3
-License-file:        LICENSE
+cabal-version: >= 1.6
+build-type:    Simple
 
-Category:            Math
-Synopsis:            Interface to the Online Encyclopedia of Integer Sequences
-Description:         Haskell interface to the Online Encyclopedia of Integer Sequences.
-Homepage:            http://code.haskell.org/oeis
+data-files:
+  README
+  example/Catalan.hs
 
-data-files:          README, example/Catalan.hs
+library
+  hs-source-dirs:
+    src
 
-Build-Depends:       base <5, network <2.3, HTTP >= 4000.0.2 && < 4000.2
-Build-Type:          Simple
+  exposed-modules:
+    Math.OEIS
 
-Exposed-Modules:     Math.OEIS
+  build-depends:
+    base    < 5,
+    network < 2.3,
+    HTTP    >= 4000.0.2 && < 4000.2
+
+  ghc-options: -Wall
+  if impl(ghc >= 6.8)
+    ghc-options: -fwarn-tabs
+
+source-repository head
+  type:     git
+  location: git://github.com/bsl/oeis.git
