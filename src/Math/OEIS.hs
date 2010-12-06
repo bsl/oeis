@@ -47,17 +47,16 @@ lookupOEIS a = do
 searchSequence_IO :: String -> IO (Maybe OEISSequence)
 searchSequence_IO x = getOEIS (baseSearchURI ++) (escapeURIString isAllowedInURI $ x)
 
--- | Look up a sequence in the OEIS by its catalog number.  Generally
--- this would be its A-number, but M-numbers (from the /Encyclopedia of
--- Integer Sequences/) and N-numbers (from the /Handbook of Integer
--- Sequences/) can be used as well.
+-- | Look up a sequence in the OEIS by its catalog number. Generally this
+-- would be its A-number, but
+-- M-numbers (from the /Encyclopedia of Integer Sequences/) and
+-- N-numbers (from the /Handbook of Integer Sequences/) can be used as well.
 --
 -- Note that the result is not in the 'IO' monad, even though the
--- implementation requires looking up information via the
--- Internet. There are no side effects to speak of, and from a
--- practical point of view the function is referentially transparent
--- (OEIS A-numbers could change in theory, but it's extremely
--- unlikely).  If you're a nitpicky purist, feel free to use the
+-- implementation requires looking up information via the Internet. There are
+-- no side effects to speak of, and from a practical point of view the function
+-- is referentially transparent (OEIS A-numbers could change in theory, but
+-- it's extremely unlikely). If you're a nitpicky purist, feel free to use the
 -- provided 'getSequenceByID_IO' instead.
 --
 -- Examples:
@@ -71,14 +70,12 @@ searchSequence_IO x = getOEIS (baseSearchURI ++) (escapeURIString isAllowedInURI
 getSequenceByID :: String -> Maybe SequenceData
 getSequenceByID = unsafePerformIO . getSequenceByID_IO
 
--- | The same as 'getSequenceByID', but with a result in the 'IO'
--- monad.
+-- | The same as 'getSequenceByID', but with a result in the 'IO' monad.
 getSequenceByID_IO :: String -> IO (Maybe SequenceData)
 getSequenceByID_IO x = lookupSequenceByID_IO x >>= return . fmap sequenceData
 
--- | Look up a sequence by ID number, returning a data structure
--- containing the entirety of the information the OEIS has on the
--- sequence.
+-- | Look up a sequence by ID number, returning a data structure containing the
+-- entirety of the information the OEIS has on the sequence.
 --
 -- The standard disclaimer about not being in the 'IO' monad applies.
 --
@@ -97,23 +94,22 @@ lookupSequenceByID = unsafePerformIO . lookupSequenceByID_IO
 lookupSequenceByID_IO :: String -> IO (Maybe OEISSequence)
 lookupSequenceByID_IO = getOEIS idSearchURI
 
--- | Extend a sequence by using it as a lookup to the OEIS, taking
--- the first sequence returned as a result, and using it to augment
--- the original sequence.
+-- | Extend a sequence by using it as a lookup to the OEIS, taking the first
+-- sequence returned as a result, and using it to augment the original
+-- sequence.
 --
--- Note that @xs@ is guaranteed to be a prefix of @extendSequence xs@.
--- If the matched OEIS sequence contains any elements prior to those
--- matching @xs@, they will be dropped.  In addition, if no matching
--- sequences are found, @xs@ will be returned unchanged.
+-- Note that @xs@ is guaranteed to be a prefix of @extendSequence xs@. If the
+-- matched OEIS sequence contains any elements prior to those matching @xs@,
+-- they will be dropped. In addition, if no matching sequences are found, @xs@
+-- will be returned unchanged.
 --
--- The result is not in the 'IO' monad even though the implementation
--- requires looking up information via the Internet.  There are no
--- side effects, and practically speaking this function is
--- referentially transparent (technically, results may change from
--- time to time when the OEIS database is updated; this is slightly
--- more likely than the results of 'getSequenceByID' changing, but still
--- unlikely enough to be essentially a non-issue.  Again, purists may
--- use 'extendSequence_IO').
+-- The result is not in the 'IO' monad even though the implementation requires
+-- looking up information via the Internet. There are no side effects, and
+-- practically speaking this function is referentially transparent
+-- (technically, results may change from time to time when the OEIS database is
+-- updated; this is slightly more likely than the results of 'getSequenceByID'
+-- changing, but still unlikely enough to be essentially a non-issue. Again,
+-- purists may use 'extendSequence_IO').
 --
 -- Examples:
 --
@@ -137,9 +133,8 @@ extendSequence_IO xs = do oeis <- lookupSequence_IO xs
                             Nothing -> return xs
                             Just s  -> return $ extend xs (sequenceData s)
 
--- | Find a matching sequence in the OEIS database, returning a data
--- structure containing the entirety of the information the OEIS has
--- on the sequence.
+-- | Find a matching sequence in the OEIS database, returning a data structure
+-- containing the entirety of the information the OEIS has on the sequence.
 --
 -- The standard disclaimer about not being in the 'IO' monad applies.
 lookupSequence :: SequenceData -> Maybe OEISSequence
@@ -149,9 +144,9 @@ lookupSequence = unsafePerformIO . lookupSequence_IO
 lookupSequence_IO :: SequenceData -> IO (Maybe OEISSequence)
 lookupSequence_IO = getOEIS seqSearchURI
 
--- | @extend xs ext@ returns the maximal suffix of @ext@ of which @xs@ is
--- a prefix, or @xs@ if @xs@ is not a prefix of any suffixes of @ext@. It
--- is guaranteed that
+-- | @extend xs ext@ returns the maximal suffix of @ext@ of which @xs@ is a
+-- prefix, or @xs@ if @xs@ is not a prefix of any suffixes of @ext@. It is
+-- guaranteed that
 --
 -- > forall xs ext. xs `isPrefixOf` (extend xs ext)
 extend :: SequenceData -> SequenceData -> SequenceData
@@ -193,15 +188,14 @@ request uri = Request{ rqURI = uri,
 
 -----------------------------------------------------------
 
--- | Programming language that some code to generate the sequence is
--- written in.  The only languages indicated natively by the OEIS
--- database are Mathematica and Maple; any other languages will be
--- listed (usually in parentheses) at the beginning of the actual code
--- snippet.
+-- | Programming language that some code to generate the sequence is written
+-- in. The only languages indicated natively by the OEIS database are
+-- Mathematica and Maple; any other languages will be listed (usually in
+-- parentheses) at the beginning of the actual code snippet.
 data Language = Mathematica | Maple | Other deriving Show
 
--- | OEIS keywords.  For more information on the meaning of each
--- keyword, see <http://oeis.org/eishelp2.html#RK>.
+-- | OEIS keywords. For more information on the meaning of each keyword, see
+-- <http://oeis.org/eishelp2.html#RK>.
 data Keyword = Base | Bref | Cofr | Cons | Core | Dead | Dumb | Dupe |
                Easy | Eigen | Fini | Frac | Full | Hard | More | Mult |
                New | Nice | Nonn | Obsc | Sign | Tabf | Tabl | Uned |
@@ -215,8 +209,8 @@ capitalize :: String -> String
 capitalize ""     = ""
 capitalize (c:cs) = toUpper c : map toLower cs
 
--- | Data structure for storing an OEIS entry.  For more information
--- on the various components, see <http://oeis.org/eishelp2.html>.
+-- | Data structure for storing an OEIS entry. For more information on the
+-- various components, see <http://oeis.org/eishelp2.html>.
 
 data OEISSequence =
   OEIS { catalogNums  :: [String],
