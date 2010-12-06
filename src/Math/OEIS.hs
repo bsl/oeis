@@ -45,7 +45,7 @@ lookupOEIS a = do
 
 -- | Look up a sequence in the OEIS using its search function
 searchSequence_IO :: String -> IO (Maybe OEISSequence)
-searchSequence_IO x = getOEIS (baseSearchURI ++) (escapeURIString isAllowedInURI $ x)
+searchSequence_IO x = getOEIS (baseSearchURI ++) (escapeURIString isAllowedInURI x)
 
 -- | Look up a sequence in the OEIS by its catalog number. Generally this
 -- would be its A-number, but
@@ -72,7 +72,7 @@ getSequenceByID = unsafePerformIO . getSequenceByID_IO
 
 -- | The same as 'getSequenceByID', but with a result in the 'IO' monad.
 getSequenceByID_IO :: String -> IO (Maybe SequenceData)
-getSequenceByID_IO x = lookupSequenceByID_IO x >>= return . fmap sequenceData
+getSequenceByID_IO x = fmap (fmap sequenceData) (lookupSequenceByID_IO x)
 
 -- | Look up a sequence by ID number, returning a data structure containing the
 -- entirety of the information the OEIS has on the sequence.
@@ -250,31 +250,31 @@ data OEISSequence =
 emptyOEIS :: OEISSequence
 emptyOEIS = OEIS [] [] [] "" [] [] [] [] "" 0 0 [] [] [] [] []
 
-addElement :: (Char, String) -> (OEISSequence -> OEISSequence)
+addElement :: (Char, String) -> OEISSequence -> OEISSequence
 addElement ('I', x) c = c { catalogNums = words x }
-addElement (t, x)   c | t `elem` "STU" = c { sequenceData = nums ++ (sequenceData c) }
+addElement (t, x)   c | t `elem` "STU" = c { sequenceData = nums ++ sequenceData c }
     where nums = map read $ csvItems x
-addElement (t, x)   c | t `elem` "VWX" = c { signedData = nums ++ (signedData c) }
+addElement (t, x)   c | t `elem` "VWX" = c { signedData = nums ++ signedData c }
     where nums = map read $ csvItems x
 addElement ('N', x) c = c { description = x                  }
-addElement ('D', x) c = c { references  = x : (references c) }
-addElement ('H', x) c = c { links       = x : (links c)      }
-addElement ('F', x) c = c { formulas    = x : (formulas c)   }
-addElement ('Y', x) c = c { xrefs       = x : (xrefs c)      }
+addElement ('D', x) c = c { references  = x : references c }
+addElement ('H', x) c = c { links       = x : links c      }
+addElement ('F', x) c = c { formulas    = x : formulas c   }
+addElement ('Y', x) c = c { xrefs       = x : xrefs c      }
 addElement ('A', x) c = c { author      = x                  }
 addElement ('O', x) c = c { offset      = read o
                           , firstGT1    = read f }
   where (o,f) = second tail . span (/=',') $ x
 addElement ('p', x) c = c { programs    = (Mathematica, x) :
-                                            (programs c)     }
+                                            programs c     }
 addElement ('t', x) c = c { programs    = (Maple, x) :
-                                            (programs c)     }
+                                            programs c     }
 addElement ('o', x) c = c { programs    = (Other, x) :
-                                            (programs c)     }
-addElement ('E', x) c = c { extensions  = x : (extensions c) }
-addElement ('e', x) c = c { examples    = x : (examples c)   }
+                                            programs c     }
+addElement ('E', x) c = c { extensions  = x : extensions c }
+addElement ('e', x) c = c { examples    = x : examples c   }
 addElement ('K', x) c = c { keywords    = parseKeywords x    }
-addElement ('C', x) c = c { comments    = x : (comments c)   }
+addElement ('C', x) c = c { comments    = x : comments c   }
 addElement _ c = c
 
 parseOEIS :: String -> Maybe OEISSequence
@@ -299,12 +299,12 @@ csvItems x = item : others
 del :: Char -> String -> String
 del _ ""     = ""
 del c (x:xs) | c==x      = xs
-             | otherwise = (x:xs)
+             | otherwise = x:xs
 
 parseItem :: String -> (Char, String)
 parseItem s = (c, str)
     where ( '%':c:_ , rest) = splitWord s
-          (_, str )    = if (c == 'I') then ("", rest)
+          (_, str )    = if c == 'I' then ("", rest)
                                             else splitWord rest
 
 combineConts :: [String] -> [String]
@@ -319,7 +319,7 @@ isItem :: String -> Bool
 isItem x = not (null x) && '%' == head x
 
 joinConts :: String -> [String] -> String
-joinConts s conts = s ++ (concat . map trimLeft $ conts)
+joinConts s conts = s ++ concatMap trimLeft conts
 
 trimLeft :: String -> String
 trimLeft = dropWhile isSpace
