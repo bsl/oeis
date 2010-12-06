@@ -1,7 +1,5 @@
--- | A Haskell interface to the Online Encyclopedia of Integer
--- Sequences (OEIS),  <http://www.research.att.com/~njas/sequences/>.
--- Comments, suggestions, or bug reports should be sent to
--- Brent Yorgey, byorgey /at/ gmail /dot/ com.
+-- | A Haskell interface to the Online Encyclopedia of Integer Sequences
+-- (OEIS), <http://oeis.org/>.
 
 module Math.OEIS
   (
@@ -203,8 +201,7 @@ request uri = Request{ rqURI = uri,
 data Language = Mathematica | Maple | Other deriving Show
 
 -- | OEIS keywords.  For more information on the meaning of each
--- keyword, see
--- <http://www.research.att.com/~njas/sequences/eishelp2.html#RK>.
+-- keyword, see <http://oeis.org/eishelp2.html#RK>.
 data Keyword = Base | Bref | Cofr | Cons | Core | Dead | Dumb | Dupe |
                Easy | Eigen | Fini | Frac | Full | Hard | More | Mult |
                New | Nice | Nonn | Obsc | Sign | Tabf | Tabl | Uned |
@@ -219,8 +216,7 @@ capitalize ""     = ""
 capitalize (c:cs) = toUpper c : map toLower cs
 
 -- | Data structure for storing an OEIS entry.  For more information
--- on the various components, see
--- <http://www.research.att.com/~njas/sequences/eishelp2.html>.
+-- on the various components, see <http://oeis.org/eishelp2.html>.
 
 data OEISSequence =
   OEIS { catalogNums  :: [String],
