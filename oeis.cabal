@@ -10,11 +10,14 @@ license:      BSD3
 license-file: LICENSE
 
 cabal-version: >= 1.6
-build-type:    Simple
+build-type:    Custom
 
 data-files:
   README
   example/Catalan.hs
+
+extra-source-files:
+  src/test.hs
 
 library
   hs-source-dirs:
