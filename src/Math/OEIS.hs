@@ -153,7 +153,7 @@ extend :: SequenceData -> SequenceData -> SequenceData
 extend xs ext = fromMaybe xs . listToMaybe . filter (xs `isPrefixOf`) $ tails ext
 
 baseSearchURI :: String
-baseSearchURI = "http://www.research.att.com/~njas/sequences/?n=1&fmt=3&q="
+baseSearchURI = "http://oeis.org/search?n=1&fmt=text&q="
 
 idSearchURI :: String -> String
 idSearchURI n = baseSearchURI ++ "id:" ++ n
@@ -278,11 +278,11 @@ addElement ('C', x) c = c { comments    = x : comments c   }
 addElement _ c = c
 
 parseOEIS :: String -> Maybe OEISSequence
-parseOEIS x = if "no match" `isPrefixOf` (ls!!1)
+parseOEIS x = if "No results." `isPrefixOf` (ls!!3)
                 then Nothing
                 else Just . foldl' (flip addElement) emptyOEIS . reverse . parseRawOEIS $ ls'
     where ls = lines x
-          ls' = init . drop 3 $ ls
+          ls' = init . drop 5 $ ls
 
 parseRawOEIS :: [String] -> [(Char, String)]
 parseRawOEIS = map parseItem . combineConts
