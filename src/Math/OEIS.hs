@@ -36,7 +36,7 @@ lookupOEIS a = do
          let a'  = commas . reverse . dropWhile isSpace . reverse . dropWhile isSpace $ a
          x <- searchSequence_IO a'
          case x of
-            Nothing -> return ["Sequence not found. "]
+            Nothing -> return ["Sequence not found."]
             Just s  -> return [description s, show $ sequenceData s]
  where commas []                     = []
        commas (x:' ':xs) | isDigit x = x : ',' : commas xs
@@ -64,7 +64,7 @@ searchSequence_IO x = getOEIS (baseSearchURI ++) (escapeURIString isAllowedInURI
 -- > Prelude Math.OEIS> getSequenceByID "A000040"    -- the prime numbers
 -- > Just [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47...
 -- >
--- > Prelude Math.OEIS> getSequenceByID "A-1"        -- no such sequence!
+-- > Prelude Math.OEIS> getSequenceByID "nosuch"     -- no such sequence!
 -- > Nothing
 
 getSequenceByID :: String -> Maybe SequenceData
@@ -368,6 +368,7 @@ There's really no way we can evaluate @countTrees 20@.  The solution? Cheat!
 > import Math.OEIS
 >
 > -- countTrees works ok up to 10 nodes.
+> -- [1,2,5,14,42,132,429,1430,4862,16796]
 > smallTreeCounts = map countTrees [0..10]
 >
 > -- now, extend the sequence via the OEIS!
