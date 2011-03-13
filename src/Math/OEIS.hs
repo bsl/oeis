@@ -22,7 +22,7 @@ module Math.OEIS
 
 import Control.Arrow (second, (***))
 import Data.Char (isDigit, isSpace, toUpper, toLower)
-import Data.List (intersperse, isPrefixOf, tails, foldl')
+import Data.List (intercalate, isPrefixOf, tails, foldl')
 import Data.Maybe (listToMaybe, fromMaybe)
 import Network.HTTP -- (simpleHTTP, rspBody, rspCode, rqBody, rqHeaders, rqMethod, rqURI, Request(..), GET)
 import Network.URI (escapeURIString, isAllowedInURI, parseURI, URI)
@@ -159,7 +159,7 @@ idSearchURI :: String -> String
 idSearchURI n = baseSearchURI ++ "id:" ++ n
 
 seqSearchURI :: SequenceData -> String
-seqSearchURI xs = baseSearchURI ++ (concat . intersperse "," . map show $ xs)
+seqSearchURI xs = baseSearchURI ++ intercalate "," (map show xs)
 
 data LookupError = LookupError deriving Show
 
