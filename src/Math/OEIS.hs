@@ -196,7 +196,7 @@ data Language = Mathematica | Maple | Other deriving Show
 
 -- | OEIS keywords. For more information on the meaning of each keyword, see
 -- <http://oeis.org/eishelp2.html#RK>.
-data Keyword = Base | Bref | Cofr | Cons | Core | Dead | Dumb | Dupe |
+data Keyword = Base | Bref | Changed | Cofr | Cons | Core | Dead | Dumb | Dupe |
                Easy | Eigen | Fini | Frac | Full | Hard | More | Mult |
                New | Nice | Nonn | Obsc | Sign | Tabf | Tabl | Uned |
                Unkn | Walk | Word
