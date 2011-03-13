@@ -1,5 +1,5 @@
 name:         oeis
-version:      0.3.0
+version:      0.3.1
 stability:    experimental
 category:     Math
 synopsis:     Interface to the Online Encyclopedia of Integer Sequences
