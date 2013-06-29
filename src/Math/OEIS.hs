@@ -402,3 +402,5 @@ Just [\"N. J. A. Sloane, \<a href=\\\"http:\/\/www.research.att.com\/~njas\/sequ
 And so on.  Reams of collected mathematical knowledge at your
 fingertips!  You must promise only to use this power for Good.
 -}
+
+{-# ANN module "HLint: ignore Use camelCase" #-}
