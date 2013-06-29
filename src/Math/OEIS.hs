@@ -1,36 +1,34 @@
--- | A Haskell interface to the Online Encyclopedia of Integer Sequences
--- (OEIS), <http://oeis.org/>.
+-- | Interface to the Online Encyclopedia of Integer Sequences (OEIS). See
+-- <http://oeis.org/>.
 
 module Math.OEIS
-  (
-    -- * Example usage
+  ( -- * Example usage
     -- $sample
 
     -- * Lookup functions
-    getSequenceByID, lookupSequenceByID,
-    extendSequence, lookupSequence,
+    getSequenceByID,    lookupSequenceByID,
+    extendSequence,     lookupSequence,
     getSequenceByID_IO, lookupSequenceByID_IO,
-    extendSequence_IO, lookupSequence_IO,
-    searchSequence_IO, lookupOEIS,
+    extendSequence_IO,  lookupSequence_IO,
+    searchSequence_IO,  lookupOEIS,
 
     -- * Data structures
     SequenceData,
     Language(..), Keyword(..),
     OEISSequence(..)
-
   ) where
 
-import Control.Arrow (second, (***))
-import Data.Char (isDigit, isSpace, toUpper, toLower)
-import Data.List (intercalate, isPrefixOf, tails, foldl')
-import Data.Maybe (listToMaybe, fromMaybe)
-import Network.HTTP -- (simpleHTTP, rspBody, rspCode, rqBody, rqHeaders, rqMethod, rqURI, Request(..), GET)
-import Network.URI (escapeURIString, isAllowedInURI, parseURI, URI)
+import Control.Arrow    (second, (***))
+import Data.Char        (isDigit, isSpace, toUpper, toLower)
+import Data.List        (intercalate, isPrefixOf, tails, foldl')
+import Data.Maybe       (listToMaybe, fromMaybe)
+import Network.HTTP     (simpleHTTP, rspBody, rspCode, rqBody, rqHeaders, rqMethod, rqURI, Request(..), RequestMethod(GET))
+import Network.URI      (escapeURIString, isAllowedInURI, parseURI, URI)
 import System.IO.Unsafe (unsafePerformIO)
 
 type SequenceData = [Integer]
 
--- | Interpret a string as a OEIS request, and return the results as Strings
+-- | Interpret a string as a OEIS request, and return the results as Strings.
 lookupOEIS :: String -> IO [String]
 lookupOEIS a = do
          let a'  = commas . reverse . dropWhile isSpace . reverse . dropWhile isSpace $ a
@@ -42,22 +40,20 @@ lookupOEIS a = do
        commas (x:' ':xs) | isDigit x = x : ',' : commas xs
        commas (x:xs)                 = x : commas xs
 
-
--- | Look up a sequence in the OEIS using its search function
+-- | Look up a sequence in the OEIS using its search function.
 searchSequence_IO :: String -> IO (Maybe OEISSequence)
 searchSequence_IO x = getOEIS (baseSearchURI ++) (escapeURIString isAllowedInURI x)
 
--- | Look up a sequence in the OEIS by its catalog number. Generally this
--- would be its A-number, but
--- M-numbers (from the /Encyclopedia of Integer Sequences/) and
--- N-numbers (from the /Handbook of Integer Sequences/) can be used as well.
+-- | Look up a sequence in the OEIS by its catalog number. Generally this would
+-- be its A-number, but M-numbers (from the /Encyclopedia of Integer
+-- Sequences/) and N-numbers (from the /Handbook of Integer Sequences/) can be
+-- used as well.
 --
 -- Note that the result is not in the 'IO' monad, even though the
 -- implementation requires looking up information via the Internet. There are
 -- no side effects to speak of, and from a practical point of view the function
 -- is referentially transparent (OEIS A-numbers could change in theory, but
--- it's extremely unlikely). If you're a nitpicky purist, feel free to use the
--- provided 'getSequenceByID_IO' instead.
+-- it's extremely unlikely).
 --
 -- Examples:
 --
@@ -305,7 +301,7 @@ parseItem :: String -> (Char, String)
 parseItem s = (c, str)
     where ( '%':c:_ , rest) = splitWord s
           (_, str )    = if c == 'I' then ("", rest)
-                                            else splitWord rest
+                                     else splitWord rest
 
 combineConts :: [String] -> [String]
 combineConts (s@('%':_:_) : ss) =
@@ -326,9 +322,9 @@ trimLeft = dropWhile isSpace
 
 {- $sample
 
-Suppose we are interested in answering the question, \"how many
-distinct binary trees are there with exactly 20 nodes?\" Some naive
-code to answer this question might be as follows:
+Suppose we are interested in answering the question, \"how many distinct binary
+trees are there with exactly 20 nodes?\" Some naive code to answer this
+question might be as follows:
 
 > import Data.List (genericLength)
 >
@@ -363,7 +359,7 @@ The problem, of course, is that @countTrees@ is horribly inefficient:
 *** Exception: stack overflow
 @
 
-There's really no way we can evaluate @countTrees 20@.  The solution? Cheat!
+There's really no way we can evaluate @countTrees 20@. The solution? Cheat!
 
 > import Math.OEIS
 >
@@ -379,18 +375,17 @@ Now we can answer the question:
 > *Main> treeCounts !! 20
 > 6564120420
 
-Sweet.  Of course, to have any sort of confidence in our answer, more
-research is required!  Let's see what combinatorial goodness we have
-stumbled across.
+Sweet.  Of course, to have any sort of confidence in our answer, more research
+is required! Let's see what combinatorial goodness we have stumbled across.
 
 @
 *Main> description \`fmap\` lookupSequence smallTreeCounts
 Just \"Catalan numbers: C(n) = binomial(2n,n)\/(n+1) = (2n)!\/(n!(n+1)!). Also called Segner numbers.\"
 @
 
-Catalan numbers, interesting.  And a nice formula we could use to code
-up a /real/ solution!  Hmm, where can we read more about these
-so-called \'Catalan numbers\'?
+Catalan numbers, interesting.  And a nice formula we could use to code up a
+/real/ solution! Hmm, where can we read more about these so-called \'Catalan
+numbers\'?
 
 @
 *Main> (head . references) \`fmap\` lookupSequence smallTreeCounts
@@ -399,8 +394,8 @@ Just [\"A. Bernini, F. Disanto, R. Pinzani and S. Rinaldi, Permutations defining
 Just [\"N. J. A. Sloane, \<a href=\\\"http:\/\/www.research.att.com\/~njas\/sequences\/b000108.txt\\\"\>The first 200 Catalan numbers\<\/a\>\"]
 @
 
-And so on.  Reams of collected mathematical knowledge at your
-fingertips!  You must promise only to use this power for Good.
+And so on. Reams of collected mathematical knowledge at your fingertips! You
+must promise only to use this power for Good.
 -}
 
 {-# ANN module "HLint: ignore Use camelCase" #-}
