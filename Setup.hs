@@ -1,13 +1,6 @@
-module Main where
+module Main (main) where
 
-import System.Process (system)
-
-import Distribution.Simple (defaultMainWithHooks, simpleUserHooks, runTests)
+import Distribution.Simple (defaultMain)
 
 main :: IO ()
-main =
-    defaultMainWithHooks $ simpleUserHooks { runTests = runTests' }
-  where
-    runTests' _ _ _ _ = do
-        system "runhaskell -Wall -i./src src/test.hs"
-        return ()
+main = defaultMain
