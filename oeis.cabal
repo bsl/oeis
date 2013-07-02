@@ -21,6 +21,8 @@ build-type:    Custom
 
 extra-source-files:
   README.md
+  test/data/id_rsp.txt
+  test/data/seq_rsp.txt
 
 --------------------------------------------------------------------------------
 
@@ -33,14 +35,15 @@ library
 
   exposed-modules:
     Math.OEIS
+    Math.OEIS.Internal
 
-  hs-source-dirs:
-    src
+  other-modules:
+    Math.OEIS.Types
 
   build-depends:
-    HTTP    == 4000.*,
-    base    == 4.*,
-    network == 2.*
+    HTTP    == 4000.2.*,
+    base    <  5,
+    network == 2.4.*
 
 --------------------------------------------------------------------------------
 
@@ -52,14 +55,16 @@ test-suite main
     ghc-options: -fwarn-tabs
 
   type: exitcode-stdio-1.0
+  hs-source-dirs:
+    test
   main-is: Test.hs
 
   build-depends:
-    HUnit                == 1.*,
-    base                 == 4.*,
-    oeis                 == 0.*,
-    test-framework       == 0.*,
-    test-framework-hunit == 0.*
+    HUnit                == 1.2.*,
+    base                 <  5,
+    oeis                 == 0.3.*,
+    test-framework       == 0.8.*,
+    test-framework-hunit == 0.3.*
 
 --------------------------------------------------------------------------------
 
