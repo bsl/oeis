@@ -1,5 +1,6 @@
 -- base
 import Data.List (isPrefixOf)
+import System.IO (IOMode(ReadMode), hGetContents, hSetEncoding, openFile, utf8)
 
 -- HUnit
 import Test.HUnit ((@?=), assertBool, assertFailure)
@@ -32,14 +33,14 @@ tests =
 
 test_parseOEIS :: IO ()
 test_parseOEIS = do
-    r0 <- readFile "test/data/id_rsp.txt"
+    r0 <- readFileUtf8 "test/data/id_rsp.txt"
     case parseOEIS r0 of
       Nothing -> assertFailure ""
       Just r  -> do
           check r
           examples r @?= []
 
-    r1 <- readFile "test/data/seq_rsp.txt"
+    r1 <- readFileUtf8 "test/data/seq_rsp.txt"
     case parseOEIS r1 of
       Nothing -> assertFailure ""
       Just r  -> do
@@ -61,6 +62,14 @@ test_parseOEIS = do
         assertBool "" $ [Core,Nonn,Nice,Easy] `elemAll` keywords r
     firstFewPrimes = [2,3,5,7,11,13,17,19,23,29,31,37]
     elemAll xs ys = all (`elem` ys) xs
+
+--------------------------------------------------------------------------------
+
+readFileUtf8 :: FilePath -> IO String
+readFileUtf8 fp = do
+    h <- openFile fp ReadMode
+    hSetEncoding h utf8
+    hGetContents h
 
 --------------------------------------------------------------------------------
 
