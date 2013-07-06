@@ -1,6 +1,3 @@
--- | Interface to the Online Encyclopedia of Integer Sequences (OEIS). See
--- <http://oeis.org/>.
-
 module Math.OEIS
   ( -- * Example usage
     -- $sample

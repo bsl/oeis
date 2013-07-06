@@ -11,8 +11,7 @@ license-file: LICENSE
 
 synopsis:     Interface to the Online Encyclopedia of Integer Sequences (OEIS)
 description:
-  Interface to the Online Encyclopedia of Integer Sequences (OEIS). See
-  <http://oeis.org/>.
+  Interface to the <http://oeis.org/ Online Encyclopedia of Integer Sequences (OEIS)>.
 
 cabal-version: >= 1.10
 build-type:    Custom
