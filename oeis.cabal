@@ -41,7 +41,7 @@ library
 
   build-depends:
     HTTP    == 4000.2.*,
-    base    <  5,
+    base    >= 3 && < 5,
     network == 2.4.*
 
 --------------------------------------------------------------------------------
@@ -60,7 +60,7 @@ test-suite main
 
   build-depends:
     HUnit                == 1.2.*,
-    base                 <  5,
+    base                 >= 3 && < 5,
     oeis                 == 0.3.*,
     test-framework       == 0.8.*,
     test-framework-hunit == 0.3.*
