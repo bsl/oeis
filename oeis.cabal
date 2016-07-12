@@ -1,5 +1,5 @@
 name:         oeis
-version:      0.3.6
+version:      0.3.7
 category:     Math
 stability:    experimental
 
@@ -45,7 +45,7 @@ library
     Math.OEIS.Types
 
   build-depends:
-    HTTP    == 4000.2.*,
+    HTTP    >= 4000.2 && < 4000.4,
     base    >= 3 && < 5
 
   if flag(network-uri)
@@ -68,7 +68,7 @@ test-suite main
   main-is: Test.hs
 
   build-depends:
-    HUnit                == 1.2.*,
+    HUnit                >= 1.2 && < 1.4,
     base                 >= 3 && < 5,
     oeis                 == 0.3.*,
     test-framework       == 0.8.*,
