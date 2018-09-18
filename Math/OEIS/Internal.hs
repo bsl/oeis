@@ -76,9 +76,9 @@ addElement ('A', x) c = c { author      = x                  }
 addElement ('O', x) c = c { offset      = read o
                           , firstGT1    = read f }
   where (o,f) = second tail . span (/=',') $ x
-addElement ('p', x) c = c { programs    = (Mathematica, x) :
+addElement ('p', x) c = c { programs    = (Maple, x) :
                                             programs c     }
-addElement ('t', x) c = c { programs    = (Maple, x) :
+addElement ('t', x) c = c { programs    = (Mathematica, x) :
                                             programs c     }
 addElement ('o', x) c = c { programs    = (Other, x) :
                                             programs c     }
