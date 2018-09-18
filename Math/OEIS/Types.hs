@@ -6,7 +6,7 @@ type SequenceData = [Integer]
 -- in. The only languages indicated natively by the OEIS database are
 -- Mathematica and Maple; any other languages will be listed (usually in
 -- parentheses) at the beginning of the actual code snippet.
-data Language = Mathematica | Maple | Other deriving Show
+data Language = Mathematica | Maple | Other deriving (Show, Eq)
 
 -- | OEIS keywords. For more information on the meaning of each keyword, see
 -- <http://oeis.org/eishelp2.html#RK>.
