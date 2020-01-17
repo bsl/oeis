@@ -24,14 +24,14 @@ idSearchURI n = baseSearchURI ++ "id:" ++ n
 seqSearchURI :: SequenceData -> String
 seqSearchURI xs = baseSearchURI ++ intercalate "," (map show xs)
 
-getOEIS :: (a -> String) -> a -> IO (Maybe OEISSequence)
+getOEIS :: (a -> String) -> a -> IO [OEISSequence]
 getOEIS toURI key =
     case parseURI (toURI key) of
-      Nothing  -> return Nothing
+      Nothing  -> return []
       Just uri -> do
           mbody <- get uri
           return $ case mbody of
-            Nothing   -> Nothing
+            Nothing   -> []
             Just body -> parseOEIS body
 
 get :: URI -> IO (Maybe String)
@@ -88,12 +88,15 @@ addElement ('K', x) c = c { keywords    = parseKeywords x    }
 addElement ('C', x) c = c { comments    = x : comments c   }
 addElement _ c = c
 
-parseOEIS :: String -> Maybe OEISSequence
+parseOEIS :: String -> [OEISSequence]
 parseOEIS x = if "No results." `isPrefixOf` (ls!!3)
-                then Nothing
-                else Just . foldl' (flip addElement) emptyOEIS . reverse . parseRawOEIS $ ls'
+                then []
+                else go . dropWhile ((/= 'I') . fst) . parseRawOEIS $ ls'
     where ls = lines x
           ls' = init . drop 5 $ ls
+          go [] = []
+          go (i:xs) = foldl' (flip addElement) emptyOEIS (reverse (i:ys)) : go zs
+              where (ys, zs) = break ((== 'I') . fst) xs
 
 parseRawOEIS :: [String] -> [(Char, String)]
 parseRawOEIS = map parseItem . combineConts

@@ -35,17 +35,17 @@ test_parseOEIS :: IO ()
 test_parseOEIS = do
     r0 <- readFileUtf8 "test/data/id_rsp.txt"
     case parseOEIS r0 of
-      Nothing -> assertFailure ""
-      Just r  -> do
+      [r]  -> do
           check r
           examples r @?= []
+      _ -> assertFailure ""
 
     r1 <- readFileUtf8 "test/data/seq_rsp.txt"
     case parseOEIS r1 of
-      Nothing -> assertFailure ""
-      Just r  -> do
+      [r,_,_,_,_,_,_,s,_,_]  -> do
           check r
-          assertBool "" $ not $ null $ examples r
+          assertBool "" $ not $ null $ examples s
+      _ -> assertFailure ""
   where
     check r = do
         catalogNums r @?= ["A000040","M0652","N0241"]
