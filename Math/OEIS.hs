@@ -8,6 +8,7 @@ module Math.OEIS
   , getSequenceByID_IO, lookupSequenceByID_IO
   , extendSequence_IO,  lookupSequence_IO
   , searchSequence_IO,  lookupOEIS
+  , searchSequences_IO, lookupSequences_IO
 
     -- * Data structures
   , SequenceData
@@ -42,7 +43,12 @@ lookupOEIS a = do
 
 -- | Look up a sequence in the OEIS using its search function.
 searchSequence_IO :: String -> IO (Maybe OEISSequence)
-searchSequence_IO x = getOEIS (baseSearchURI ++) (escapeURIString isAllowedInURI x)
+searchSequence_IO x = listToMaybe <$> searchSequences_IO x
+
+-- | Look up sequences in the OEIS using its search function (returns up to
+-- 10 results).
+searchSequences_IO :: String -> IO [OEISSequence]
+searchSequences_IO x = getOEIS (baseSearchURI ++) (escapeURIString isAllowedInURI x)
 
 -- | Look up a sequence in the OEIS by its catalog number. Generally this would
 -- be its A-number, but M-numbers (from the /Encyclopedia of Integer
@@ -88,7 +94,7 @@ lookupSequenceByID = unsafePerformIO . lookupSequenceByID_IO
 
 -- | The same as 'lookupSequenceByID', but in the 'IO' monad.
 lookupSequenceByID_IO :: String -> IO (Maybe OEISSequence)
-lookupSequenceByID_IO = getOEIS idSearchURI
+lookupSequenceByID_IO x = listToMaybe <$> getOEIS idSearchURI x
 
 -- | Extend a sequence by using it as a lookup to the OEIS, taking the first
 -- sequence returned as a result, and using it to augment the original
@@ -146,7 +152,11 @@ lookupSequence = unsafePerformIO . lookupSequence_IO
 
 -- | The same as 'lookupSequence', but in the 'IO' monad.
 lookupSequence_IO :: SequenceData -> IO (Maybe OEISSequence)
-lookupSequence_IO = getOEIS seqSearchURI
+lookupSequence_IO x = listToMaybe <$> lookupSequences_IO x
+
+-- | Similar to 'lookupSequence_IO', but return up to 10 results.
+lookupSequences_IO :: SequenceData -> IO [OEISSequence]
+lookupSequences_IO = getOEIS seqSearchURI
 
 --------------------------------------------------------------------------------
 
