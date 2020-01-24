@@ -86,4 +86,4 @@ test-suite main
 
 source-repository head
   type:     git
-  location: git://github.com/bsl/oeis.git
+  location: git://github.com/niteria/oeis.git
