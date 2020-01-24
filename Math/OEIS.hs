@@ -18,6 +18,8 @@ module Math.OEIS
 
 --------------------------------------------------------------------------------
 
+import Control.Applicative ((<$>))
+import Prelude
 import Data.Char        (isDigit, isSpace)
 import Data.List        (isPrefixOf, tails)
 import Data.Maybe       (listToMaybe, fromMaybe)
