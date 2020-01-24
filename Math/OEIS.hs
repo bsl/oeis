@@ -21,7 +21,7 @@ module Math.OEIS
 import Control.Applicative ((<$>))
 import Prelude
 import Data.Char        (isDigit, isSpace)
-import Data.List        (isPrefixOf, tails)
+import Data.List        (isPrefixOf, tails, find)
 import Data.Maybe       (listToMaybe, fromMaybe)
 import Network.URI      (escapeURIString, isAllowedInURI)
 import System.IO.Unsafe (unsafePerformIO)
@@ -143,7 +143,7 @@ extendSequence_IO xs = do
 --
 -- > forall xs ext. xs `isPrefixOf` (extend xs ext)
 extend :: SequenceData -> SequenceData -> SequenceData
-extend xs ext = fromMaybe xs . listToMaybe . filter (xs `isPrefixOf`) $ tails ext
+extend xs ext = fromMaybe xs . find (xs `isPrefixOf`) $ tails ext
 
 -- | Find a matching sequence in the OEIS database, returning a data structure
 -- containing the entirety of the information the OEIS has on the sequence.

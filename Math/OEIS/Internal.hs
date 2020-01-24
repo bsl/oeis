@@ -30,9 +30,7 @@ getOEIS toURI key =
       Nothing  -> return []
       Just uri -> do
           mbody <- get uri
-          return $ case mbody of
-            Nothing   -> []
-            Just body -> parseOEIS body
+          return $ maybe [] parseOEIS mbody
 
 get :: URI -> IO (Maybe String)
 get uri = do
